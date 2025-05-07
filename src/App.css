@@ -1,0 +1,182 @@
+/* #root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #19191ae1);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+} */
+
+
+
+
+
+/* import 'bootstrap/dist/css/bootstrap.min.css';
+import { TextField, Button } from '@mui/material';
+import { DateTimePicker } from '@mui/x-date-pickers';
+import { useState } from 'react';
+import TodoComponent, { Todo } from './components/TodoComponent.tsx';
+import { Calendar, momentLocalizer } from 'react-big-calendar';
+import moment from 'moment';
+
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+
+
+
+const localizer = momentLocalizer(moment);
+function App() {
+  const [todos, setTodos] = useState<Todo[]>([])
+  const [todo, setTodo] = useState<string>("")
+  const [endDate, setEndDate] = useState<Date | null>(new Date());
+
+  function handleSubmit() {
+    const newTodo: Todo = {
+      id: todos.length + 1,
+      title: todo,
+      completed: false,
+      start: new Date(),
+      end: endDate || new Date(),
+    };
+    setTodos([...todos, newTodo]);
+    setTodo("");
+  }
+
+
+  function handleComplete(id: number) {
+    const updatedTodos = todos.map((todo) => {
+      if (todo.id === id) {
+        return { ...todo, completed: !todo.completed };
+      }
+      return todo;
+    });
+    setTodos(updatedTodos);
+  }
+
+  function handleDelete(id: number) {
+    const updatedTodos = todos.filter((todo) => todo.id !== id);
+    setTodos(updatedTodos);
+  }
+
+  const today = new Date();
+  const next6Days = [...Array(6)].map((_, index) => {
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + index + 1);
+    return nextDay;
+  });
+
+  return (
+    <div className="container-fluid d-flex flex-column vh-100 p-0">
+      <div className='w-100 h-50 d-flex flex column justify-content-start align-items-center bg-light gap-3'>
+        <div className="h-100 w-50 d-flex flex-column justify-content-start align-items-center bg-secondary gap-3">
+          <h1>Todo List</h1>
+          <div className='w-100 d-flex flex-column gap-3'>
+            {todos.map((todo) => (
+              <TodoComponent key={todo.id} {...todo}
+                handleComplete={handleComplete}
+                handleDelete={handleDelete}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="h-100 w-50 d-flex flex-column justify-content-start align-items-center bg-light gap-3">
+          <h1>Enter Your Todo Here</h1>
+          <TextField
+            label="Todo"
+            variant="outlined"
+            color="primary"
+            sx={{ backgroundColor: 'white', borderRadius: 1, width: '80%' }}
+            onChange={(e) => setTodo(e.target.value)}
+            value={todo}
+          />
+          <LocalizationProvider dateAdapter={AdapterDateFns} >
+            <DateTimePicker
+              sx={{ width: '80%' }}
+              label="Select End Date"
+              value={endDate}
+              onChange={(newValue) => setEndDate(newValue)}
+              slotProps={{
+                textField: {
+                  variant: 'outlined',
+                  fullWidth: true,
+                },
+              }}
+            />
+          </LocalizationProvider>
+          <Button
+            variant="contained"
+            sx={{ width: '80%', backgroundColor: 'slategray' }}
+            onClick={handleSubmit}
+          >
+            Add Todo
+          </Button>
+          <h4 className='mt-5'>You Can Drag Your Todo Here For Edit</h4>
+        </div>
+      </div>
+
+      <div className="w-100 h-50 d-flex flex-column justify-content-start align-items-center bg-light gap-3 ">
+        <h1>Your Events</h1>
+        <Calendar
+          localizer={localizer}
+          events={todos.map(todo => ({
+            id: todo.id,
+            title: todo.title,
+            start: todo.start,
+            end: todo.end,
+          }))}
+          startAccessor="start"
+          endAccessor="end"
+          style={{
+            height: 400,
+            width: '100%',
+            borderRadius: '8px', // Adding border radius to make edges smoother
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Soft shadow for depth
+            backgroundColor: '#fff', // White background for clean look
+          }}
+          defaultDate={new Date()}
+          defaultView="agenda"
+          views={['agenda']}
+          min={today}
+          max={next6Days[next6Days.length - 1]}
+        />
+      </div>
+    </div>
+  );
+}
+
+export default App; */
+
