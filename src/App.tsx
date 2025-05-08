@@ -3,7 +3,8 @@ import { TextField, Button, Snackbar, Alert } from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useEffect, useState } from 'react';
-import TodoComponent, { ITodo } from './components/TodoComponent.tsx';
+import TodoComponent from './components/TodoComponent.tsx';
+import { ITodo } from './store/todoStore.tsx';
 
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
@@ -19,19 +20,18 @@ import { useStore } from './context/storeProvider.tsx';
 
 const localizer = momentLocalizer(moment);
 const DnDCalendar = withDragAndDrop(Calendar);
+import { observer } from 'mobx-react-lite';
 
 function App(props: any) {
-  const [todos, setTodos] = useState<ITodo[]>([]);
   const [todo, setTodo] = useState<string>('');
   const [startDate, setStartDate] = useState<Date | null>(new Date());
   const [endDate, setEndDate] = useState<Date | null>(new Date());
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [check, setCheck] = useState(true);
   const [editIndex, setEditIndex] = useState<number>(-1);
   const [isEdit, setIsEdit] = useState(false);
   const [alertText, setAlertText] = useState<string>('');
   const [alertSeverity, setAlertSeverity] = useState<'success' | 'error'>('success');
-
+  const { todoStore } = useStore();
   interface CalenderInfo {
     selectedDate: string;
     selectedTime: string;
@@ -40,23 +40,11 @@ function App(props: any) {
   const [setReadyToSubmit, setSetReadyToSubmit] = useState(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('todos');
-    if (saved) setTodos(JSON.parse(saved));
-    // console.log(todos)
-
+    todoStore.getTodos()
   }, []);
 
-  useEffect(() => {
-    if (check) {
-      setCheck(false);
-      return;
-    }
-    localStorage.setItem('todos', JSON.stringify(todos));
-    // console.log(todos)
-  }, [todos]);
-
   function isOverlapping(start: Date, end: Date, excludeIndex: number = -1): boolean {
-    return todos.some((todo, index) => {
+    return todoStore.todos.some((todo, index) => {
       if (index === excludeIndex) return false; // skip the todo we are editing
       const existingStart = new Date(todo.start);
       const existingEnd = new Date(todo.end);
@@ -69,7 +57,6 @@ function App(props: any) {
   }
 
   function handleSubmit() {
-    // console.log(todo)
     if (!todo.trim()) {
       setAlertText('Todo cannot be empty');
       setAlertSeverity('error');
@@ -92,13 +79,13 @@ function App(props: any) {
     }
 
     if (isEdit && editIndex !== -1) {
-      const updatedTodos = todos.map((t, index) => {
+      const updatedTodos = todoStore.todos.map((t, index) => {
         if (index === editIndex) {
           return { ...t, title: todo, start: startDate, end: endDate };
         }
         return t;
       });
-      setTodos(updatedTodos);
+      todoStore.setTodos(updatedTodos);
       setIsEdit(false);
       setEditIndex(-1);
       setAlertText('Todo updated successfully');
@@ -111,7 +98,7 @@ function App(props: any) {
         start: startDate,
         end: endDate,
       };
-      setTodos([...todos, newTodo]);
+      todoStore.addTodo(newTodo);
       setAlertText('Todo added successfully');
       setAlertSeverity('success');
     }
@@ -127,13 +114,14 @@ function App(props: any) {
   }
 
   function handleComplete(id: number) {
-    setTodos(todos.map(todo => (
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo
-    )));
+    todoStore.completeTodo(id);
+    setSnackbarOpen(true);
+    setAlertText('Todo completed successfully');
+    setAlertSeverity('success');
   }
 
   function handleDelete(id: number) {
-    setTodos(todos.filter(todo => todo.id !== id));
+    todoStore.deleteTodo(id);
     setSnackbarOpen(true);
     setAlertText('Todo deleted successfully');
     setAlertSeverity('success');
@@ -142,8 +130,7 @@ function App(props: any) {
   const [{ isOver }, dropRef] = useDrop({
     accept: 'todo',
     drop: (item: ITodo) => {
-      // console.log(item)
-      const index = todos.findIndex(todo => todo.id === item.id);
+      const index = todoStore.todos.findIndex(todo => todo.id === item.id);
       setEditIndex(index)
       setIsEdit(true)
       setTodo(item.title);
@@ -157,7 +144,6 @@ function App(props: any) {
 
   function handleCalendarClick(event: any) {
     const date = new Date(event.start);
-    // console.log(date)
     const formattedDate = moment(date).format('YYYY-MM-DD');
     const formattedTime = moment(date).format('HH:mm');
 
@@ -165,14 +151,11 @@ function App(props: any) {
       selectedDate: formattedDate,
       selectedTime: formattedTime,
     });
-    // console.log(eventInfo)
     props.addTodoFormToggler()
   }
 
   const handleSubmitForm = (formData: { todo: string; startTime: string; endTime: string }) => {
-    // console.log(formData)
     setTodo(formData.todo);
-    // console.log(todo)
     const start = new Date(`${eventInfo.selectedDate}T${formData.startTime}`);
     const end = new Date(`${eventInfo.selectedDate}T${formData.endTime}`);
     setStartDate(start);
@@ -195,18 +178,17 @@ function App(props: any) {
   }
 
   function handleEventDrop({ event, start, end }: any) {
-    const index = todos.findIndex(todo => todo.id === event.id);
+    const index = todoStore.todos.findIndex(todo => todo.id === event.id);
     if (isOverlapping(start, end, index)) {
       setAlertText('Dragged time overlaps with an existing task');
       setAlertSeverity('error');
       setSnackbarOpen(true);
       return;
     }
-    const updatedTodos = todos.map(todo =>
+    const updatedTodos = todoStore.todos.map(todo =>
       todo.id === event.id ? { ...todo, start, end } : todo
     );
-    setTodos(updatedTodos);
-  
+    todoStore.setTodos(updatedTodos);
     setAlertText('Todo updated via drag & drop');
     setAlertSeverity('success');
     setSnackbarOpen(true);
@@ -219,8 +201,8 @@ function App(props: any) {
         <div className="h-100 w-100 w-md-50 d-flex flex-column justify-content-start align-items-center bg-secondary gap-3 p-3 rounded">
           <h1 className="text-white">Todo List</h1>
           <div className='w-100 d-flex flex-column gap-3 overflow-auto'>
-            {todos.map((todo) => (
-              <TodoComponent key={todo.id} {...todo} handleComplete={handleComplete} handleDelete={handleDelete} start={todo.start || new Date()} end={todo.end || new Date()} />
+            {todoStore.todos.map((todo) => (
+              <TodoComponent key={todo.id} {...todo}  handleDelete={handleDelete} handleComplete={handleComplete} start={todo.start || new Date()} end={todo.end || new Date()} />
             ))}
           </div>
         </div>
@@ -284,7 +266,7 @@ function App(props: any) {
         <DnDCalendar
           selectable
           localizer={localizer}
-          events={todos.map(todo => ({
+          events={todoStore.todos.map(todo => ({
             id: todo.id,
             title: todo.title,
             start: new Date(todo.start),
@@ -303,7 +285,7 @@ function App(props: any) {
             boxShadow: '0 0 8px rgba(0,0,0,0.1)',
           }}
           eventPropGetter={(event) => {
-            const matched = todos.find(t => t.id === (event as ITodo).id);
+            const matched = todoStore.todos.find(t => t.id === (event as ITodo).id);
             return {
               style: {
                 backgroundColor: matched?.completed ? '#6c757d' : '#007bff',
@@ -327,4 +309,4 @@ function App(props: any) {
   );
 }
 
-export default AddTodoFormHOC(App)
+export default AddTodoFormHOC(observer(App))

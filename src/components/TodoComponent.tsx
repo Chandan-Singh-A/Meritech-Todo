@@ -1,22 +1,17 @@
 import { Checkbox, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useDrag } from 'react-dnd';
-
-export interface ITodo {
-  id: number;
-  title: string;
-  completed: boolean;
-  start: Date;
-  end: Date;
+import { ITodo } from '../store/todoStore'
+export interface ITodoFunctionns {
   handleComplete?: (id: number) => void;
   handleDelete?: (id: number) => void;
 }
 
-function TodoComponent({ id, title, completed, start, end ,handleComplete, handleDelete }: ITodo) {
+function TodoComponent({ id, title, completed, start, end, handleComplete, handleDelete }: ITodo & ITodoFunctionns) {
 
   const [{ isDragging }, dragRef] = useDrag({
     type: 'todo',
-    item: { id, title, completed ,start ,end },
+    item: { id, title, completed, start, end },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),

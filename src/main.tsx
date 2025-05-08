@@ -5,6 +5,8 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { StoreProvider } from './context/storeProvider.tsx'
 
+
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <DndProvider backend={HTML5Backend}>
