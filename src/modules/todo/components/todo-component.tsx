@@ -1,7 +1,7 @@
 import { Checkbox, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useDrag } from 'react-dnd';
-import { ITodo } from '../store/todoStore'
+import { ITodo } from '../core/store/todo-store'
 export interface ITodoFunctionns {
   handleComplete?: (id: number) => void;
   handleDelete?: (id: number) => void;

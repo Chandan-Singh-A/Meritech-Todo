@@ -27,6 +27,7 @@ export class UserStore {
             userState: observable,
             addUser: action,
             loginUser: action,
+            logout:action
         })
     }
     addUser(user: IUser) {
@@ -48,12 +49,19 @@ export class UserStore {
             this.user = [existingUser];
             this.userState.isSuccess = true;
             this.userState.isError = null;
+            localStorage.setItem("loggedInUser", JSON.stringify(true));
             return true;
         } else {
             this.userState.isError = "Invalid email or password";
             this.userState.isSuccess = false;
             return false;
         }
+    }
+    logout() {
+        this.user = [];
+        this.userState.isSuccess = false;
+        this.userState.isError = null;
+        localStorage.removeItem("loggedInUser");
     }
 }
 const userStore = new UserStore()

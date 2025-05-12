@@ -5,14 +5,14 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { StoreProvider } from './context/storeProvider.tsx'
 import { createBrowserRouter,RouterProvider } from 'react-router-dom'
 
-import App from './App.tsx'
-import LoginComponent  from './Login/LoginComponent.tsx'
-import SignupComponent from './SignUp/SignUpComponent.tsx'
+import Todo from './modules/todo/todo.tsx'
+import SignUpComponent from './modules/auth/forms/sign-up-component.tsx'
+import LoginComponent from './modules/auth/forms/login-component.tsx'
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App />,
+    element: <Todo />,
   },
   {
     path: '/login',
@@ -20,7 +20,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/signup',
-    element: <SignupComponent />,
+    element: <SignUpComponent />,
   }
 ])
 

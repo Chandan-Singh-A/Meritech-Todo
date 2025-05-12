@@ -3,8 +3,8 @@ import { TextField, Button, Snackbar, Alert } from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { useEffect, useState } from 'react';
-import TodoComponent from './components/TodoComponent.tsx';
-import { ITodo } from './store/todoStore.tsx';
+import TodoComponent from './components/todo-component.tsx';
+import { ITodo } from './core/store/todo-store.tsx';
 
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
@@ -15,7 +15,7 @@ import moment from 'moment';
 import { useDrop } from 'react-dnd';
 
 import AddTodoForm from './components/AddTodoForm.tsx';
-import AddTodoFormHOC from './HOC/AddTodoFormHOC.tsx';
+import AddTodoFormHOC from './modules/todo/hoc/AddTodoFormHOC.tsx';
 import { useStore } from './context/storeProvider.tsx';
 
 const localizer = momentLocalizer(moment);

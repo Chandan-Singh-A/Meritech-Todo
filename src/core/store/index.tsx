@@ -1,5 +1,5 @@
-import todoStore,{TodoStore} from "./todoStore";
-import userStore,{UserStore } from "./userStore";
+import todoStore,{TodoStore} from "./todo-store";
+import userStore,{UserStore } from "./user-store";
 
 export type RootStore={
     todoStore:TodoStore,

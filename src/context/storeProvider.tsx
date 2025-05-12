@@ -1,5 +1,5 @@
 import { useContext, createContext, } from "react";
-import rootStore, { RootStore } from "../store";
+import rootStore, { RootStore } from "../core/store";
 import { useLocalObservable } from "mobx-react-lite";
 
 const StoreContext = createContext<RootStore | null>(null);

@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../context/storeProvider';
 import { Link } from 'react-router-dom';
 
-function SignupComponent() {
+function SignUpComponent() {
     const navigate = useNavigate();
     const { userStore } = useStore();
 
@@ -113,4 +113,4 @@ function SignupComponent() {
     );
 };
 
-export default observer(SignupComponent);
+export default observer(SignUpComponent);
