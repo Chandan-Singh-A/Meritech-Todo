@@ -17,6 +17,7 @@
     "@mui/x-date-pickers": "^8.0.0",
     "bootstrap": "^5.3.5",
     "date-fns": "^4.1.0",
+    "formik": "^2.4.6",
     "mobx": "^6.13.7",
     "mobx-logger": "^0.7.1",
     "mobx-react-lite": "^4.1.0",
@@ -25,13 +26,17 @@
     "react-big-calendar": "^1.18.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.6.0",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
     "@types/react": "^19.0.10",
     "@types/react-big-calendar": "^1.16.1",
     "@types/react-dom": "^19.0.4",
+    "@types/react-router-dom": "^5.3.3",
+    "@types/yup": "^0.32.0",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9.22.0",
     "eslint-plugin-react-hooks": "^5.2.0",

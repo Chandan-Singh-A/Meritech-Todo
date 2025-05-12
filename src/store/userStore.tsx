@@ -1,40 +1,60 @@
-import {action,observable,makeObservable} from 'mobx';
+import { action, observable, makeObservable } from 'mobx';
 
-interface IUser{
-    username:string,
-    email:string,
-    password:string
-    id:number,
+interface IUser {
+    username: string,
+    email: string,
+    password: string
+    id: number,
 }
 
-interface IUserState{
-    isloading:boolean,
-    isError:string|null,
-    isSuccess:boolean,
+interface IUserState {
+    isloading: boolean,
+    isError: string | null,
+    isSuccess: boolean,
 }
 
-export class UserStore{
-    user:IUser[]=[]
-    userState:IUserState={
-        isloading:false,
-        isError:null,
-        isSuccess:false,
+export class UserStore {
+    user: IUser[] = []
+    userState: IUserState = {
+        isloading: false,
+        isError: null,
+        isSuccess: false,
     }
 
-    constructor(){
-    makeObservable(this,{
-        user:observable,
-        userState:observable,
-        addUser:action,
-        deletUser:action        
-    })
+    constructor() {
+        makeObservable(this, {
+            user: observable,
+            userState: observable,
+            addUser: action,
+            loginUser: action,
+        })
     }
-    addUser(user:IUser){
-        console.log("adduser",user)
+    addUser(user: IUser) {
+        const existing = this.user.find(u => u.email === user.email);
+        if (existing) {
+            this.userState.isError = "Email already exists";
+            this.userState.isSuccess = false;
+            return;
+        }
+        this.user.push(user);
+        localStorage.setItem("user", JSON.stringify(this.user));
+        this.userState.isSuccess = true;
+        this.userState.isError = null;
     }
-    deletUser(id:Number){
-        console.log("deleteuser",id)
+    loginUser(email: string, password: string): boolean {
+        const storedUsers = JSON.parse(localStorage.getItem("user") || "[]");
+        const existingUser = storedUsers.find((u: IUser) => u.email === email && u.password === password);
+        if (existingUser) {
+            this.user = [existingUser];
+            this.userState.isSuccess = true;
+            this.userState.isError = null;
+            return true;
+        } else {
+            this.userState.isError = "Invalid email or password";
+            this.userState.isSuccess = false;
+            return false;
+        }
     }
 }
-const userStore=new UserStore()
+const userStore = new UserStore()
 export default userStore
