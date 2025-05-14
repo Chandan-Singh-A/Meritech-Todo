@@ -2,12 +2,20 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { observer } from 'mobx-react-lite';
 import { useNavigate } from 'react-router-dom';
-import { useStore } from '../context/storeProvider';
+import { useStore } from '../../../context/storeProvider';
 import { Link } from 'react-router-dom';
+import { getUserLoginInfo } from '../../../helpers/local-storage-helper';
 
 function SignUpComponent() {
     const navigate = useNavigate();
     const { userStore } = useStore();
+    const userLoginInfo = getUserLoginInfo();
+        if (userLoginInfo) {
+            const { loggedIn } = userLoginInfo;
+            if (loggedIn) {
+                navigate('/');
+            }
+        }
 
     const formik = useFormik({
         initialValues: {
@@ -23,12 +31,11 @@ function SignUpComponent() {
         onSubmit: (values) => {
             const newUser = {
                 ...values,
-                id: Date.now(),
+                userId: Date.now(),
             };
             userStore.addUser(newUser);
-
             if (userStore.userState.isSuccess) {
-                navigate('/');
+                navigate('/login');
             }
         },
     });

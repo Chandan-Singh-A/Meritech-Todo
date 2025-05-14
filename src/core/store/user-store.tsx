@@ -1,21 +1,8 @@
 import { action, observable, makeObservable } from 'mobx';
-
-interface IUser {
-    username: string,
-    email: string,
-    password: string
-    id: number,
-}
-
-interface IUserState {
-    isloading: boolean,
-    isError: string | null,
-    isSuccess: boolean,
-}
-
+import { IUser,IObervableState } from '../../models/i_common';
 export class UserStore {
     user: IUser[] = []
-    userState: IUserState = {
+    userState: IObervableState = {
         isloading: false,
         isError: null,
         isSuccess: false,
@@ -31,8 +18,13 @@ export class UserStore {
         })
     }
     addUser(user: IUser) {
+        let users = localStorage.getItem("user");
+        if (users) {
+            this.user = JSON.parse(users);
+        }
         const existing = this.user.find(u => u.email === user.email);
         if (existing) {
+            console.log(existing)
             this.userState.isError = "Email already exists";
             this.userState.isSuccess = false;
             return;
@@ -49,7 +41,11 @@ export class UserStore {
             this.user = [existingUser];
             this.userState.isSuccess = true;
             this.userState.isError = null;
-            localStorage.setItem("loggedInUser", JSON.stringify(true));
+            let loggedInUserInfo = {
+                userId: existingUser.userId,
+                loggedIn: true,
+            }
+            localStorage.setItem("loggedInUserInfo", JSON.stringify(loggedInUserInfo));
             return true;
         } else {
             this.userState.isError = "Invalid email or password";
@@ -61,7 +57,9 @@ export class UserStore {
         this.user = [];
         this.userState.isSuccess = false;
         this.userState.isError = null;
-        localStorage.removeItem("loggedInUser");
+        localStorage.removeItem("loggedInUserInfo");
+        this.userState.isloading = false;
+        this.userState.isSuccess = true;
     }
 }
 const userStore = new UserStore()

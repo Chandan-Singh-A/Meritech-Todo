@@ -2,9 +2,9 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { TextField, Button, Snackbar, Alert } from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { useEffect, useState } from 'react';
+import {  useEffect, useState } from 'react';
 import TodoComponent from './components/todo-component.tsx';
-import { ITodo } from './core/store/todo-store.tsx';
+import { ITodo, CalenderInfo } from '../../models/i_common.ts';
 
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
@@ -14,13 +14,20 @@ import moment from 'moment';
 
 import { useDrop } from 'react-dnd';
 
-import AddTodoForm from './components/AddTodoForm.tsx';
-import AddTodoFormHOC from './modules/todo/hoc/AddTodoFormHOC.tsx';
-import { useStore } from './context/storeProvider.tsx';
+import AddTodoForm from './forms/add-todo-form.tsx';
+import AddTodoFormHOC from './hoc/AddTodoFormHOC.tsx';
+import { useStore } from '../../context/storeProvider.tsx'
+import { observer } from 'mobx-react-lite';
+
+import { useNavigate } from 'react-router-dom';
 
 const localizer = momentLocalizer(moment);
 const DnDCalendar = withDragAndDrop(Calendar);
-import { observer } from 'mobx-react-lite';
+
+import {getUserLoginInfo} from '../../helpers/local-storage-helper.ts'
+import { set } from 'mobx';
+import { se } from 'date-fns/locale';
+
 
 function App(props: any) {
   const [todo, setTodo] = useState<string>('');
@@ -31,32 +38,49 @@ function App(props: any) {
   const [isEdit, setIsEdit] = useState(false);
   const [alertText, setAlertText] = useState<string>('');
   const [alertSeverity, setAlertSeverity] = useState<'success' | 'error'>('success');
-  const { todoStore } = useStore();
-  interface CalenderInfo {
-    selectedDate: string;
-    selectedTime: string;
-  }
+  const { todoStore, userStore } = useStore();
+
   const [eventInfo, setEventInfo] = useState<CalenderInfo>({ selectedDate: '', selectedTime: '' });
-  const [setReadyToSubmit, setSetReadyToSubmit] = useState(false);
+  const [setReadyToSubmit, setSetReadyToSubmit] = useState(false)
+  const navigate = useNavigate();
+
+  const userInfo = getUserLoginInfo();
 
   useEffect(() => {
-    todoStore.getTodos()
-  }, []);
+    if (!userInfo || userInfo.loggedIn === false) {
+      let data={
+        userId: 0,
+        loggedIn: false,
+      }
+      localStorage.setItem("loggedInUserInfo", JSON.stringify(data));
+      navigate('/login');
+    }
+    else todoStore.getTodos(userInfo.userId);
+  }
+  , []);
 
   function isOverlapping(start: Date, end: Date, excludeIndex: number = -1): boolean {
+    // Check if the new time range is in the past
+    const now = new Date();
+    if (start < now || end < now) {
+      return true;
+    }
+
+    // Check for overlap with other todos
     return todoStore.todos.some((todo, index) => {
-      if (index === excludeIndex) return false; // skip the todo we are editing
-      const existingStart = new Date(todo.start);
-      const existingEnd = new Date(todo.end);
-      return (
-        (start >= existingStart && start < existingEnd) ||  // new start is inside existing
-        (end > existingStart && end <= existingEnd) ||      // new end is inside existing
-        (start <= existingStart && end >= existingEnd)      // new covers existing
-      );
+        if (index === excludeIndex) return false; // skip the todo we are editing
+        const existingStart = new Date(todo.start);
+        const existingEnd = new Date(todo.end);
+        return (
+            (start >= existingStart && start < existingEnd) ||  // new start is inside existing
+            (end > existingStart && end <= existingEnd) ||      // new end is inside existing
+            (start <= existingStart && end >= existingEnd)      // new covers existing
+        );
     });
-  }
+}
 
   function handleSubmit() {
+    console.log("here")
     if (!todo.trim()) {
       setAlertText('Todo cannot be empty');
       setAlertSeverity('error');
@@ -72,7 +96,7 @@ function App(props: any) {
     }
 
     if (isOverlapping(startDate, endDate, isEdit ? editIndex : -1)) {
-      setAlertText('Todo time overlaps with an existing task');
+      setAlertText('Todo time overlaps with an existing task or is in the past');
       setAlertSeverity('error');
       setSnackbarOpen(true);
       return;
@@ -85,7 +109,7 @@ function App(props: any) {
         }
         return t;
       });
-      todoStore.setTodos(updatedTodos);
+      todoStore.updateTodo(updatedTodos,userInfo.userId);
       setIsEdit(false);
       setEditIndex(-1);
       setAlertText('Todo updated successfully');
@@ -97,8 +121,9 @@ function App(props: any) {
         completed: false,
         start: startDate,
         end: endDate,
+        userId: userInfo.userId,
       };
-      todoStore.addTodo(newTodo);
+      todoStore.addTodo(newTodo,userInfo.userId);
       setAlertText('Todo added successfully');
       setAlertSeverity('success');
     }
@@ -164,11 +189,12 @@ function App(props: any) {
   };
 
   useEffect(() => {
-    if (setReadyToSubmit && todo && startDate && endDate) {
+    if (setReadyToSubmit) {
+      console.log("first",setReadyToSubmit)
       handleSubmit()
       setSetReadyToSubmit(false)
     }
-  }, [todo, startDate, endDate, setReadyToSubmit])
+  }, [setReadyToSubmit]);
 
 
   function handleCloseForm() {
@@ -180,7 +206,7 @@ function App(props: any) {
   function handleEventDrop({ event, start, end }: any) {
     const index = todoStore.todos.findIndex(todo => todo.id === event.id);
     if (isOverlapping(start, end, index)) {
-      setAlertText('Dragged time overlaps with an existing task');
+      setAlertText('Dragged time overlaps with an existing task or is in the past');
       setAlertSeverity('error');
       setSnackbarOpen(true);
       return;
@@ -188,7 +214,7 @@ function App(props: any) {
     const updatedTodos = todoStore.todos.map(todo =>
       todo.id === event.id ? { ...todo, start, end } : todo
     );
-    todoStore.setTodos(updatedTodos);
+    todoStore.updateTodo(updatedTodos,userInfo.userId);
     setAlertText('Todo updated via drag & drop');
     setAlertSeverity('success');
     setSnackbarOpen(true);
@@ -202,7 +228,7 @@ function App(props: any) {
           <h1 className="text-white">Todo List</h1>
           <div className='w-100 d-flex flex-column gap-3 overflow-auto'>
             {todoStore.todos.map((todo) => (
-              <TodoComponent key={todo.id} {...todo}  handleDelete={handleDelete} handleComplete={handleComplete} start={todo.start || new Date()} end={todo.end || new Date()} />
+              <TodoComponent key={todo.id} {...todo} handleDelete={handleDelete} handleComplete={handleComplete} start={todo.start || new Date()} end={todo.end || new Date()} />
             ))}
           </div>
         </div>
@@ -215,7 +241,25 @@ function App(props: any) {
           }}
           style={{ border: isOver ? '2px dashed #0d6efd' : undefined }}
         >
-          <h1>Enter Your Todo</h1>
+          <div className='d-flex justify-content-between align-items-start'>
+            <h1>Enter Your Todo</h1>
+            <Button
+              variant='contained'
+              sx={{
+                height: '40px',
+                width: '80px',
+                backgroundColor: 'slategray',
+              }}
+              onClick={() => {
+                userStore.logout();
+                todoStore.logout();
+                navigate('/login');
+              }}
+            >
+              Logout
+            </Button>
+          </div>
+
           <TextField
             label="Todo"
             variant="outlined"
@@ -272,8 +316,8 @@ function App(props: any) {
             start: new Date(todo.start),
             end: new Date(todo.end),
           }))}
-          startAccessor={(event:object) => (event as ITodo).start}
-          endAccessor={(event)=> (event as ITodo).end}
+          startAccessor={(event: object) => (event as ITodo).start}
+          endAccessor={(event) => (event as ITodo).end}
           defaultView="week"
           defaultDate={new Date()}
           style={{
