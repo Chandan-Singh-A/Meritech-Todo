@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../../context/storeProvider';
 import { Link } from 'react-router-dom';
 import {getUserLoginInfo}from '../../../helpers/local-storage-helper'
+import backgroundImage from '../../../assets/images/TodoImage.jpeg'
 
 function LoginComponent() {
     const navigate = useNavigate();
@@ -35,7 +36,15 @@ function LoginComponent() {
     });
 
     return (
-        <div className="height-100 justify-content-center align-items-center width-100">
+        <div className="height-100 justify-content-center align-items-center width-100"
+        style={
+            {
+                backgroundImage: `url(${backgroundImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                height: '100vh',
+            }
+        }>
             <div className="mt-5 row justify-content-center">
                 <div className="col-md-6">
                     <div className="card">

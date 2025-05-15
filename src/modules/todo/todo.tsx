@@ -2,7 +2,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import { TextField, Button, Snackbar, Alert } from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import {  useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import TodoComponent from './components/todo-component.tsx';
 import { ITodo, CalenderInfo } from '../../models/i_common.ts';
 
@@ -24,9 +24,7 @@ import { useNavigate } from 'react-router-dom';
 const localizer = momentLocalizer(moment);
 const DnDCalendar = withDragAndDrop(Calendar);
 
-import {getUserLoginInfo} from '../../helpers/local-storage-helper.ts'
-import { set } from 'mobx';
-import { se } from 'date-fns/locale';
+import { getUserLoginInfo } from '../../helpers/local-storage-helper.ts'
 
 
 function App(props: any) {
@@ -48,7 +46,7 @@ function App(props: any) {
 
   useEffect(() => {
     if (!userInfo || userInfo.loggedIn === false) {
-      let data={
+      let data = {
         userId: 0,
         loggedIn: false,
       }
@@ -57,7 +55,7 @@ function App(props: any) {
     }
     else todoStore.getTodos(userInfo.userId);
   }
-  , []);
+    , []);
 
   function isOverlapping(start: Date, end: Date, excludeIndex: number = -1): boolean {
     // Check if the new time range is in the past
@@ -68,16 +66,16 @@ function App(props: any) {
 
     // Check for overlap with other todos
     return todoStore.todos.some((todo, index) => {
-        if (index === excludeIndex) return false; // skip the todo we are editing
-        const existingStart = new Date(todo.start);
-        const existingEnd = new Date(todo.end);
-        return (
-            (start >= existingStart && start < existingEnd) ||  // new start is inside existing
-            (end > existingStart && end <= existingEnd) ||      // new end is inside existing
-            (start <= existingStart && end >= existingEnd)      // new covers existing
-        );
+      if (index === excludeIndex) return false; // skip the todo we are editing
+      const existingStart = new Date(todo.start);
+      const existingEnd = new Date(todo.end);
+      return (
+        (start >= existingStart && start < existingEnd) ||  // new start is inside existing
+        (end > existingStart && end <= existingEnd) ||      // new end is inside existing
+        (start <= existingStart && end >= existingEnd)      // new covers existing
+      );
     });
-}
+  }
 
   function handleSubmit() {
     console.log("here")
@@ -109,7 +107,7 @@ function App(props: any) {
         }
         return t;
       });
-      todoStore.updateTodo(updatedTodos,userInfo.userId);
+      todoStore.updateTodo(updatedTodos, userInfo.userId);
       setIsEdit(false);
       setEditIndex(-1);
       setAlertText('Todo updated successfully');
@@ -123,7 +121,7 @@ function App(props: any) {
         end: endDate,
         userId: userInfo.userId,
       };
-      todoStore.addTodo(newTodo,userInfo.userId);
+      todoStore.addTodo(newTodo, userInfo.userId);
       setAlertText('Todo added successfully');
       setAlertSeverity('success');
     }
@@ -190,7 +188,7 @@ function App(props: any) {
 
   useEffect(() => {
     if (setReadyToSubmit) {
-      console.log("first",setReadyToSubmit)
+      console.log("first", setReadyToSubmit)
       handleSubmit()
       setSetReadyToSubmit(false)
     }
@@ -214,7 +212,7 @@ function App(props: any) {
     const updatedTodos = todoStore.todos.map(todo =>
       todo.id === event.id ? { ...todo, start, end } : todo
     );
-    todoStore.updateTodo(updatedTodos,userInfo.userId);
+    todoStore.updateTodo(updatedTodos, userInfo.userId);
     setAlertText('Todo updated via drag & drop');
     setAlertSeverity('success');
     setSnackbarOpen(true);
@@ -341,12 +339,34 @@ function App(props: any) {
               },
             };
           }}
-          onSelectSlot={(event) => {
-            handleCalendarClick(event)
+          onSelectSlot={(slotInfo) => {
+            const now = new Date();
+            const isPast = slotInfo.start < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            if (isPast) {
+              setAlertText('Selected time is in the past');
+              setAlertSeverity('error');
+              setSnackbarOpen(true);
+              return; 
+            }
+            handleCalendarClick(slotInfo);
           }}
           onEventDrop={handleEventDrop}
           resizable
           onEventResize={handleEventDrop}
+          dayPropGetter={(date) => {
+            const now = new Date();
+            const isPast = date < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            if (isPast) {
+              return {
+                style: {
+                  backgroundColor: 'rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity))',
+                  cursor: 'not-allowed',
+                },
+              };
+            }
+            return {};
+          }}
+
         />
       </div>
     </div>
